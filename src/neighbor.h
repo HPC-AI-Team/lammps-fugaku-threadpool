@@ -91,6 +91,8 @@ class Neighbor : protected Pointers {
   int nrequest;        // # of requests, same as nlist
   int old_nrequest;    // # of requests for previous run
 
+  std::atomic<int>  threadpool_m;
+
   NeighList **lists;
   NeighRequest **requests;        // from Pair,Fix,Compute,Command classes
   NeighRequest **old_requests;    // copy of requests to compare to
@@ -171,6 +173,8 @@ class Neighbor : protected Pointers {
 
   bigint last_setup_bins;    // step of last neighbor::setup_bins() call
 
+  class NPair **neigh_pair;
+
  protected:
   int me, nprocs;
   int firsttime;    // flag for calling init_styles() only once
@@ -233,7 +237,6 @@ class Neighbor : protected Pointers {
   PairCreator *pairclass;
   char **pairnames;
   int *pairmasks;
-  class NPair **neigh_pair;
 
   class NTopo *neigh_bond;
   class NTopo *neigh_angle;

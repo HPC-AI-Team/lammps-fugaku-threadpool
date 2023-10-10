@@ -20,6 +20,7 @@
 #include "domain.h"
 #include "group.h"
 #include "error.h"
+#include "comm.h"
 
 using namespace LAMMPS_NS;
 
@@ -93,12 +94,16 @@ double ComputeTemp::compute_scalar()
         t += (v[i][0]*v[i][0] + v[i][1]*v[i][1] + v[i][2]*v[i][2]) *
           mass[type[i]];
   }
+  if(DEBUG_MSG) utils::logmesg(lmp,"ComputeTemp::compute_ t {} \n", t);
 
   MPI_Allreduce(&t,&scalar,1,MPI_DOUBLE,MPI_SUM,world);
   if (dynamic) dof_compute();
   if (dof < 0.0 && natoms_temp > 0.0)
     error->all(FLERR,"Temperature compute degrees of freedom < 0");
   scalar *= tfactor;
+
+  if(DEBUG_MSG) utils::logmesg(lmp,"ComputeTemp::compute_scalar {} \n", scalar);
+
   return scalar;
 }
 

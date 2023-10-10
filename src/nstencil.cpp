@@ -239,10 +239,10 @@ void NStencil::create_setup()
         maxstencil = smax;
         memory->destroy(stencil);
         memory->create(stencil,maxstencil,"neighstencil:stencil");
-        if (xyzflag) {
+        // if (xyzflag) {
           memory->destroy(stencilxyz);
           memory->create(stencilxyz,maxstencil,3,"neighstencil:stencilxyz");
-        }
+        // }
       }
 
     } else {

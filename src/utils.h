@@ -84,6 +84,51 @@ namespace utils {
    *  \param mesg   string with message to be printed */
 
   void logmesg(LAMMPS *lmp, const std::string &mesg);
+  
+   template <typename TYPE> void logmesg_arry(LAMMPS *lmp, const std::string &mesg, TYPE *n_array, int n, int step)
+  {
+   std::string tmp;
+   tmp += "[info]" + mesg;
+   for(int i = 0; i < n ;i += step) {
+      tmp += fmt::format("  {}:{}", i, n_array[i]);
+   }
+   tmp += "\n";
+   logmesg(lmp, tmp);
+  }
+   template <typename TYPE> void logmesg_arry_r(LAMMPS *lmp, const std::string &mesg, TYPE *n_array, int n, int step)
+  {
+   std::string tmp;
+   int rswap;
+   tmp += "[info]" + mesg;
+   for(int i = 0; i < n ;i += step) {
+      rswap = (i % 2 == 0) ? i + 1 : i - 1;      
+      tmp += fmt::format("  {}:{}", rswap, n_array[rswap]);
+   }
+   tmp += "\n";
+   logmesg(lmp, tmp);
+  }
+
+   template <typename TYPE> void logmesg_arry_parral(LAMMPS *lmp, const std::string &mesg, TYPE *n_array, int n, int nstart, int step)
+  {
+   std::string tmp;
+   tmp += "[info]" + mesg;
+   for(int i = nstart; i < n ;i += step) {
+      tmp += fmt::format("  {}:{}", i, n_array[i]);
+   }
+   tmp += "\n";
+   logmesg(lmp, tmp);
+  }
+   template <typename TYPE> void logmesg_arry_parral_r(LAMMPS *lmp, const std::string &mesg, TYPE *n_array, int n, int nstart, int step)
+  {
+   std::string tmp;
+   tmp += "[info]" + mesg;
+   for(int i = nstart; i < n ;i += step) {
+      tmp += fmt::format("  {}:{}", i + 1, n_array[i + 1]);
+   }
+   tmp += "\n";
+   logmesg(lmp, tmp);
+  }
+
 
   /*! Return text redirecting the user to a specific paragraph in the manual
    *

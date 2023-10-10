@@ -44,7 +44,7 @@ using namespace LAMMPS_NS;
 
 #define BUFEXTRA 1024
 
-enum{ONELEVEL,TWOLEVEL,NUMA,CUSTOM};
+enum{ONELEVEL,TWOLEVEL,NUMA,CUSTOM,UTOFU};
 enum{CART,CARTREORDER,XYZ};
 
 /* ---------------------------------------------------------------------- */
@@ -81,6 +81,36 @@ Comm::Comm(LAMMPS *lmp) : Pointers(lmp)
   rcbnew = 0;
   multi_reduce = 0;
 
+  comm_omp_flag = comm_piggy_flag  = 
+      comm_border_one_flag = thread_pool_flag = 
+      debug_flag = false;
+
+  if (getenv("COMM_OMP_FLAG") != nullptr && atoi(getenv("COMM_OMP_FLAG")) == 1) {
+    comm_omp_flag = true;
+  }
+  if (getenv("COMM_PIGGY_FLAG") != nullptr && atoi(getenv("COMM_PIGGY_FLAG")) == 1) {
+    comm_piggy_flag = true;
+  }
+  if (getenv("COMM_BORDER_ONE_FLAG") != nullptr && atoi(getenv("COMM_BORDER_ONE_FLAG")) == 1) {
+    comm_border_one_flag = true;
+  }
+  if (getenv("THREAD_POOL_FLAG") != nullptr && atoi(getenv("THREAD_POOL_FLAG")) == 1) {
+    thread_pool_flag = true;
+  }
+  if (getenv("COMM_DEBUG_FLAG") != nullptr && atoi(getenv("COMM_DEBUG_FLAG")) == 1) {
+    debug_flag = true;
+  }
+
+  if (me == 0){
+    utils::logmesg(lmp,"  COMM_OMP_FLAG {} \n",comm_omp_flag);
+    utils::logmesg(lmp,"  COMM_PIGGY_FLAG {} \n",comm_piggy_flag);
+    utils::logmesg(lmp,"  COMM_BORDER_ONE_FLAG {} \n",comm_border_one_flag);
+    utils::logmesg(lmp,"  THREAD_POOL_FLAG {} \n",thread_pool_flag);
+    utils::logmesg(lmp,"  COMM_DEBUG_FLAG {} \n",debug_flag);
+  }
+
+
+  
   // use of OpenMP threads
   // query OpenMP for number of threads/process set by user at run-time
   // if the OMP_NUM_THREADS environment variable is not set, we default
@@ -89,6 +119,10 @@ Comm::Comm(LAMMPS *lmp) : Pointers(lmp)
   // as many threads as there are (virtual) CPU cores by default.
 
   nthreads = 1;
+
+  if(thread_pool_flag) {
+    nthreads = 12;
+  }
 #ifdef _OPENMP
   if (lmp->kokkos) {
     nthreads = lmp->kokkos->nthreads * lmp->kokkos->numa;
@@ -260,6 +294,8 @@ void Comm::init()
     if (mode != Comm::MULTI)
       error->all(FLERR,"Cannot use multi/reduce communication without mode multi");
   }
+
+  
 }
 
 /* ----------------------------------------------------------------------
@@ -454,7 +490,9 @@ void Comm::set_processors(int narg, char **arg)
         customfile = utils::strdup(arg[iarg+2]);
         iarg += 1;
 
-      } else error->all(FLERR,"Illegal processors command");
+      } else if (strcmp(arg[iarg+1],"utofu") == 0) {
+        gridflag = UTOFU;
+      }else error->all(FLERR,"Illegal processors command");
       iarg += 2;
 
     } else if (strcmp(arg[iarg],"map") == 0) {
@@ -569,6 +607,8 @@ void Comm::set_proc_grid(int outflag)
 
   } else if (gridflag == CUSTOM) {
     pmap->custom_grid(customfile,nprocs,user_procgrid,procgrid);
+  } else if (gridflag == UTOFU) {
+    pmap->utofu_grid(procgrid, domain->boxlo, domain->boxhi);
   }
 
   // error check on procgrid
@@ -609,6 +649,8 @@ void Comm::set_proc_grid(int outflag)
 
   } else if (gridflag == CUSTOM) {
     pmap->custom_map(procgrid,myloc,procneigh,grid2proc);
+  } else if (gridflag == UTOFU) {
+    pmap->utofu_map(procgrid,myloc,procneigh,grid2proc);
   }
 
   // print 3d grid info to screen and logfile

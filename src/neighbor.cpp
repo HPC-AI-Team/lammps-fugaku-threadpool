@@ -2427,7 +2427,19 @@ void Neighbor::build(int topoflag)
     if (!lists[m]->copy || lists[m]->trim || lists[m]->kk2cpu)
       lists[m]->grow(nlocal,nall);
     neigh_pair[m]->build_setup();
-    neigh_pair[m]->build(lists[m]);
+    if(comm->thread_pool_flag) {
+      threadpool_m = m;
+      lmp->execute(LAMMPS::NEIGHBOR_BUILD);
+    } else {
+      neigh_pair[m]->build(lists[m]);
+    }
+
+    // std::string mesg = " neiborlist ";
+    // for(int i = 0; i < atom->nlocal; i++){
+    //   mesg += fmt::format(" {} ", lists[m]->numneigh[i]);
+    // }
+    // if(DEBUG_MSG) utils::logmesg(lmp," {} \n", mesg);
+  
   }
 
   // build topology lists for bonds/angles/etc

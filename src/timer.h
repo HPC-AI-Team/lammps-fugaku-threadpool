@@ -31,6 +31,20 @@ class Timer : protected Pointers {
     COMM,
     MODIFY,
     OUTPUT,
+
+    BOARDER,
+    EXCANGE,
+    FORWARD,
+    REVERSE,
+    
+    PAIR_SEND,
+    PAIR_RECV,
+    PAIR_WAIT,
+    PAIR_CPY,
+    BOARDER_NUM_SEND,
+    BOARDER_BUF_SEND,
+    OUTPUT_REDUCE,
+
     SYNC,
     ALL,
     DEPHASE,

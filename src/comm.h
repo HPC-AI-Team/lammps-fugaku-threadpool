@@ -18,6 +18,8 @@
 
 namespace LAMMPS_NS {
 
+
+
 class Comm : protected Pointers {
  public:
   enum { BRICK, TILED };
@@ -32,6 +34,9 @@ class Comm : protected Pointers {
   int mode;    // SINGLE = single cutoff
                // MULTI = multi-collection cutoff
                // MULTIOLD = multiold-type cutoff
+
+  int c_vcq;
+  
 
   int me, nprocs;               // proc info
   int ghost_velocity;           // 1 if ghost atoms have velocity, 0 if not
@@ -56,6 +61,16 @@ class Comm : protected Pointers {
   int myloc[3];                        // which proc I am in each dim, 0 to N-1
   int procneigh[3][2];                 // my 6 neighboring procs, 0/1 = left/right
   double *xsplit, *ysplit, *zsplit;    // fractional (0-1) sub-domain sizes, includes 0/1
+
+  int **opt_procneigh;
+
+  bool comm_omp_flag;
+  bool comm_piggy_flag;
+  bool comm_border_one_flag;
+  bool thread_pool_flag;
+  bool debug_flag;
+
+  bool utofu_init_flag;
   int ***grid2proc;                    // which proc owns i,j,k loc in 3d grid
 
   // public settings specific to layout = TILED
@@ -85,10 +100,35 @@ class Comm : protected Pointers {
   virtual void exchange() = 0;                     // move atoms to new procs
   virtual void borders() = 0;                      // setup list of atoms to comm
 
+  virtual void opt_exchange() {};                     // move atoms to new procs
+  virtual void opt_reverse_comm(){};                 // reverse comm of forces
+  virtual void opt_borders(){};                      // setup list of atoms to comm
+  virtual void opt_borders_one(){};                      // setup list of atoms to comm
+
+  virtual void borders_one_parral_sendlist(){};                      // setup list of atoms to comm
+  virtual void borders_one_parral_xmit(int){};                      // setup list of atoms to comm
+  virtual void borders_one_parral_firstrecv(){};                      // setup list of atoms to comm
+  virtual void borders_one_parral_xmit_pos(int){};                      // setup list of atoms to comm
+  virtual void borders_one_parral_finish(){};
+
+  virtual void forward_comm_parral(int) {};    // forward comm of atom coords
+  virtual void reverse_comm_parral(int){};                 // reverse comm of forces
+  virtual void reverse_comm_parral_unpack(){};                 // reverse comm of forces
+
+
+
+  virtual void utofu_init(){};
+  virtual void utofu_delete(){};
+  
+
   // forward/reverse comm from a Pair, Bond, Fix, Compute, Dump
 
   virtual void forward_comm(class Pair *) = 0;
   virtual void reverse_comm(class Pair *) = 0;
+  virtual void forward_comm_parral(class Pair *, int tid) {};
+  virtual void reverse_comm_parral(class Pair *, int tid) {};
+  virtual void forward_comm_parral_unpack(class Pair *) {};
+  virtual void reverse_comm_parral_unpack(class Pair *) {};
   virtual void forward_comm(class Bond *) = 0;
   virtual void reverse_comm(class Bond *) = 0;
   virtual void forward_comm(class Fix *, int size = 0) = 0;
@@ -170,6 +210,13 @@ class Comm : protected Pointers {
 
  public:
   enum { MULTIPLE };
+};
+
+struct Utofu_comm{
+  utofu_vcq_id_t  vcq_id;
+  utofu_stadd_t   utofu_stadd;
+  utofu_stadd_t   utofu_f_stadd;
+  utofu_stadd_t   utofu_x_stadd;
 };
 
 }    // namespace LAMMPS_NS

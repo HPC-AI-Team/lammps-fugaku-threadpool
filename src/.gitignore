@@ -10,6 +10,19 @@
 /lmpinstalledpkgs.h
 /lmpgitversion.h
 
+lmp_execute
+lmp_threadpool
+
+compile.log
+
+*.err
+*.out
+*.stats
+stderr.*
+stdout.1.[1-9]*
+stdout.1.0
+output/
+
 /*_gpu.h
 /*_gpu.cpp
 /*_intel.h

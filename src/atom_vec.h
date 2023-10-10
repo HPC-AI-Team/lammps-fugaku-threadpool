@@ -56,6 +56,8 @@ class AtomVec : protected Pointers {
   int nargcopy;      // copy of command-line args for atom_style command
   char **argcopy;    // used when AtomVec is realloced (restart,replicate)
 
+  bool domain_nmax_flag;
+
   // additional list of peratom fields operated on by different methods
   // set or created by child styles
 

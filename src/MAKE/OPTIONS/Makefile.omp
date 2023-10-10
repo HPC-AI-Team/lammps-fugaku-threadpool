@@ -6,13 +6,13 @@ SHELL = /bin/sh
 # compiler/linker settings
 # specify flags and libraries needed for your compiler
 
-CC =		mpicxx
-CCFLAGS =	-g -O3 -restrict -fopenmp -std=c++11
+CC =		mpiFCCpx
+CCFLAGS =	-g -O3  -ltofucom -std=c++11 -mcpu=a64fx -march=armv8.3-a+sve  -fopenmp
 SHFLAGS =	-fPIC
 DEPFLAGS =	-M
 
-LINK =		mpicxx
-LINKFLAGS =	-g -O -fopenmp -std=c++11
+LINK =		mpiFCCpx
+LINKFLAGS =	-g -O3   -ltofucom -std=c++11 -mcpu=a64fx -march=armv8.3-a+sve  -fopenmp
 LIB = 
 SIZE =		size
 

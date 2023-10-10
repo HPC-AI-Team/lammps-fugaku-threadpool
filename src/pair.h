@@ -27,16 +27,20 @@ class Pair : protected Pointers {
   friend class DihedralCharmmOMP;
   friend class FixGPU;
   friend class FixIntel;
-  friend class FixOMP;
   friend class FixQEq;
   friend class PairHybrid;
   friend class PairHybridScaled;
+  friend class FixOMP;
+  friend class FixThreadpool;
   friend class ThrOMP;
+  friend class ThrThreadpool;
   friend class Info;
   friend class Neighbor;
 
  public:
   static int instance_total;    // # of Pair classes ever instantiated
+
+  int pair_style_debug = 0;
 
   double eng_vdwl, eng_coul;    // accumulated energies
   double virial[6];             // accumulated virial: xx,yy,zz,xy,xz,yz
@@ -152,6 +156,7 @@ class Pair : protected Pointers {
   // general child-class methods
 
   virtual void compute(int, int) = 0;
+  virtual void compute(int, int, int) {};
   virtual void compute_inner() {}
   virtual void compute_middle() {}
   virtual void compute_outer(int, int) {}
@@ -271,6 +276,13 @@ class Pair : protected Pointers {
   // Accessor for the INTEL package to determine virial calc for hybrid
 
   inline int fdotr_is_set() const { return vflag_fdotr; }
+  
+  void ev_init(int eflag, int vflag, int alloc = 1)  {
+    if (eflag || vflag)
+      ev_setup(eflag, vflag, alloc);
+    else
+      ev_unset();
+  }
 
  protected:
   int vflag_fdotr;
@@ -279,13 +291,7 @@ class Pair : protected Pointers {
   int copymode;    // if set, do not deallocate during destruction
                    // required when classes are used as functors by Kokkos
 
-  void ev_init(int eflag, int vflag, int alloc = 1)
-  {
-    if (eflag || vflag)
-      ev_setup(eflag, vflag, alloc);
-    else
-      ev_unset();
-  }
+
   virtual void ev_setup(int, int, int alloc = 1);
   void ev_unset();
   void ev_tally_full(int, double, double, double, double, double, double);

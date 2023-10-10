@@ -28,11 +28,22 @@ void NStencilHalfBin3d::create()
   int i, j, k;
 
   nstencil = 0;
-
+#ifdef OPT_NEWTON
+  for (k = -sz; k <= sz; k++)
+    for (j = -sy; j <= sy; j++)
+      for (i = -sx; i <= sx; i++)
+          if (bin_distance(i, j, k) < cutneighmaxsq){
+            stencilxyz[nstencil][0] = i;
+            stencilxyz[nstencil][1] = j;
+            stencilxyz[nstencil][2] = k;
+            stencil[nstencil++] = k * mbiny * mbinx + j * mbinx + i;
+          }
+#else
   for (k = 0; k <= sz; k++)
     for (j = -sy; j <= sy; j++)
       for (i = -sx; i <= sx; i++)
         if (k > 0 || j > 0 || (j == 0 && i > 0))
           if (bin_distance(i, j, k) < cutneighmaxsq)
             stencil[nstencil++] = k * mbiny * mbinx + j * mbinx + i;
+#endif
 }

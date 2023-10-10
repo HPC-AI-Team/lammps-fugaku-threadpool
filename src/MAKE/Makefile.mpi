@@ -7,18 +7,19 @@ SHELL = /bin/sh
 # specify flags and libraries needed for your compiler
 
 CC =		mpicxx
-CCFLAGS =	-g -O3 -std=c++11
+CCFLAGS =	-O2  -g -mieee -std=c++11 -DLAMMPS_BIGBIG
 SHFLAGS =	-fPIC
 DEPFLAGS =	-M
 
 LINK =		mpicxx
-LINKFLAGS =	-g -O3 -std=c++11
+LINKFLAGS =	-O2  -g -mieee -std=c++11 -DLAMMPS_BIGBIG
 LIB =
 SIZE =		size
 
 ARCHIVE =	ar
 ARFLAGS =	-rc
-SHLIBFLAGS =	-shared -rdynamic
+SHLIBFLAGS =	-shared #-rdynamic
+
 
 # ---------------------------------------------------------------------
 # LAMMPS-specific settings, all OPTIONAL
@@ -28,7 +29,7 @@ SHLIBFLAGS =	-shared -rdynamic
 # LAMMPS ifdef settings
 # see possible settings in Section 3.5 of the manual
 
-LMP_INC =	-DLAMMPS_GZIP -DLAMMPS_MEMALIGN=64  # -DLAMMPS_CXX98
+LMP_INC =	# -DLAMMPS_GZIP -DLAMMPS_MEMALIGN=64  # -DLAMMPS_CXX98
 
 # MPI library
 # see discussion in Section 3.4 of the manual
@@ -119,6 +120,6 @@ depend : fastdep.exe $(SRC)
 	@./fastdep.exe $(EXTRA_INC) -- $^ > .depend || exit 1
 
 fastdep.exe: ../DEPEND/fastdep.c
-	cc -O -o $@ $<
+	cc -O0 -o $@ $<
 
 sinclude .depend

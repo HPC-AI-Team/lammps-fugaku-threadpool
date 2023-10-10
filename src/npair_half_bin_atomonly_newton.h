@@ -30,6 +30,7 @@ class NPairHalfBinAtomonlyNewton : public NPair {
  public:
   NPairHalfBinAtomonlyNewton(class LAMMPS *);
   void build(class NeighList *) override;
+  void build_parral(NeighList *list, int tid) override;
 };
 
 }    // namespace LAMMPS_NS

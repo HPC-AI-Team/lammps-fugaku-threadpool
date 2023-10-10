@@ -370,6 +370,21 @@ void Domain::set_local_box()
     if (mysplit[2][1] < 1.0) subhi[2] = boxlo[2] + zprd*mysplit[2][1];
     else subhi[2] = boxhi[2];
   }
+
+
+  lcl_prd[0] = lcl_xprd = subhi[0] - sublo[0];
+  lcl_prd[1] = lcl_yprd = subhi[1] - sublo[1];
+  lcl_prd[2] = lcl_zprd = subhi[2] - sublo[2];
+  
+  // if(DEBUG_MSG) {
+  //   auto mesg = fmt::format("[info] subboder split "); 
+  //   for(int i = 0; i < 3; i++) {
+  //     mesg += fmt::format("  {}:{} ", sublo[i], subhi[i]);
+  //   }
+  //   mesg += "\n";
+  //   utils::logmesg(lmp,mesg);
+  // }
+
 }
 
 /* ----------------------------------------------------------------------

@@ -29,6 +29,8 @@ namespace LAMMPS_NS {
 class KSpace : protected Pointers {
   friend class ThrOMP;
   friend class FixOMP;
+  friend class FixThreadpool;
+  friend class ThrThreadpool;
 
  public:
   double energy;    // accumulated energies

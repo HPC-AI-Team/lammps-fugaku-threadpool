@@ -1700,9 +1700,20 @@ void Input::package()
 
     std::string fixcmd = "package_omp all OMP";
     for (int i = 1; i < narg; i++) fixcmd += std::string(" ") + arg[i];
+    modify->add_fix(fixcmd); 
+    
+    } else if (strcmp(arg[0],"threadpool") == 0) {
+    if (!modify->check_package("Threadpool"))
+      error->all(FLERR,
+                 "Package threadpool command without threadpool package installed");
+
+    // if(DEBUG_MSG) utils::logmesg(lmp,"intput modify->add_fix threadpool \n");
+
+    std::string fixcmd = "package_threadpool all Threadpool";
+    for (int i = 1; i < narg; i++) fixcmd += std::string(" ") + arg[i];
     modify->add_fix(fixcmd);
 
- } else if (strcmp(arg[0],"intel") == 0) {
+  } else if (strcmp(arg[0],"intel") == 0) {
     if (!modify->check_package("INTEL"))
       error->all(FLERR, "Package intel command without INTEL package installed");
 

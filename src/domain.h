@@ -72,6 +72,8 @@ class Domain : protected Pointers {
   double minzlo, minzhi;    // tri only possible for non-skew dims
 
   // orthogonal box
+  double lcl_xprd, lcl_yprd, lcl_zprd;                   // global box dimensions
+  double lcl_prd[3];
 
   double sublo[3], subhi[3];    // sub-box bounds on this proc
 

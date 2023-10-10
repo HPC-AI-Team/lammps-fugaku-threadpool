@@ -820,9 +820,13 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix)
   // nullptr must be last entry in this list
 
   // clang-format off
+  if(DEBUG_MSG) {
+    utils::logmesg(lmp," add_fix  fix id {} \n", arg[2]);  
+  }
+
   const char *exceptions[] =
     {"GPU", "OMP", "INTEL", "property/atom", "cmap", "cmap3", "rx",
-     "deprecated", "STORE/KIM", "amoeba/pitorsion", "amoeba/bitorsion",
+     "deprecated", "STORE/KIM", "amoeba/pitorsion", "amoeba/bitorsion","Threadpool",
      nullptr};
   // clang-format on
 

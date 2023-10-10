@@ -16,6 +16,31 @@
 
 #include <cstdio>
 #include <mpi.h>
+#include <utofu.h>
+#include <pthread.h>
+#include <atomic>
+#include <mpi-ext.h>  // Include header file
+#include <unistd.h>
+#include "utils.h"
+#include <mutex>
+
+#define DIM_NUM 62
+#define SWAP_NUM DIM_NUM*2
+#define TNI_NUM 6
+#define VCQ_NUM 4
+#define XMIT_TYPE_NUM 4
+#define THREAD_NUM 11
+#define THREAD_STRIDE 5
+#define T_THREAD 12
+
+
+#define OPT_NEWTON
+
+#define DEBUG_MSG comm->debug_flag
+// #define DEBUG_MSG 0
+
+#define OPT_COMM_TEST
+// #define DEBUG_MSG 1
 
 namespace LAMMPS_NS {
 
@@ -43,6 +68,61 @@ class LAMMPS {
   class MemoryKokkos *memoryKK;    // KOKKOS version of Memory class
   class Python *python;            // Python interface
   class CiteMe *citeme;            // handle citation info
+
+
+  enum Fun_type{
+    FORWARD_XMIT      = 0x01,
+    REVERSE_XMIT      = 0x02,
+
+    BORDER_XMIT       = 0x03,
+    BORDERS_SENDLIST  = 0x04,
+    BORDERS_XMIT_BUF  = 0x05,
+    BORDERS_FIRSTRECV = 0x06,
+    BORDERS_XMIT_POS  = 0x07,
+    BORDERS_FINISH    = 0x08,
+
+    EXCHANGE_XMIT     = 0x09,
+    NEIGHBOR_BUILD     = 0x0a,
+    PAIR_COMPUTE       = 0x0b,
+    PRE_FORCE_P       = 0x0c
+  };
+
+  pthread_t lmp_threads[THREAD_NUM];
+  std::atomic<uint64_t> is_excute;
+  // std::atomic<int> is_finish;
+  // std::atomic<int> is_last;
+  // std::atomic<bool> is_release;
+  // std::atomic<int> is_last;
+  int is_finish[T_THREAD];
+  std::atomic<bool> is_release[T_THREAD];
+  int mtx_ptr[T_THREAD];
+  std::mutex mtx[T_THREAD];
+  std::atomic<int> is_barrier[T_THREAD];
+
+  bool is_shutdown_ = false;
+  static LAMMPS* curMy;
+
+  void parral_barrier(int t_num = 12, int tid = 0);
+
+
+  static void* callback(void* arg){  
+    // utils::logmesg(LAMMPS::curMy, " callback create tid {} \n", int(arg)); 
+    LAMMPS::curMy->parral_fun(int(arg));  
+    return NULL;  
+  }  
+
+  void execute(enum Fun_type);
+  void parral_fun(int);
+  void pthread_pool_start();
+  void pthread_test();
+
+  pthread_barrier_t barrier_12;
+
+
+  void setCurMy()  
+  {//设置当前对象为回调函数调用的对象  
+      curMy = this;  
+  }
 
   const char *version;    // LAMMPS version string = date
   int num_ver;            // numeric version id derived from *version*

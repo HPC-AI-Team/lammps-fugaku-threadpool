@@ -21,6 +21,8 @@ namespace LAMMPS_NS {
 class Dihedral : protected Pointers {
   friend class ThrOMP;
   friend class FixOMP;
+  friend class ThrThreadpool;
+  friend class FixThreadpool;
 
  public:
   int allocated;

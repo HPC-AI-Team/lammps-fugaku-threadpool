@@ -19,8 +19,10 @@
 namespace LAMMPS_NS {
 
 class Bond : protected Pointers {
-  friend class ThrOMP;
   friend class FixOMP;
+  friend class FixThreadpool;
+  friend class ThrOMP;
+  friend class ThrThreadpool;
 
  public:
   static int instance_total;    // # of Bond classes ever instantiated

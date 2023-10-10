@@ -67,6 +67,8 @@ class Force : protected Pointers {
 
   int newton, newton_pair, newton_bond;    // Newton's 3rd law settings
 
+  std::atomic<uint64_t> threadpool_eflag, threadpool_vflag;
+
   Pair *pair;
   char *pair_style;
   char *pair_restart;

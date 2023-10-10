@@ -19,8 +19,10 @@
 namespace LAMMPS_NS {
 
 class Improper : protected Pointers {
-  friend class ThrOMP;
   friend class FixOMP;
+  friend class FixThreadpool;
+  friend class ThrOMP;
+  friend class ThrThreadpool;
 
  public:
   int allocated;

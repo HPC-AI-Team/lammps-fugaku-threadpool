@@ -221,6 +221,15 @@ void NBinStandard::setup_bins(int style)
 void NBinStandard::bin_atoms()
 {
   int i,ibin;
+  double bsubboxlo[3], bsubboxhi[3];
+
+  double *cutghost = comm->cutghost;
+  bsubboxlo[0] = domain->sublo[0] - cutghost[0];
+  bsubboxlo[1] = domain->sublo[1] - cutghost[1];
+  bsubboxlo[2] = domain->sublo[2] - cutghost[2];
+  bsubboxhi[0] = domain->subhi[0] + cutghost[0];
+  bsubboxhi[1] = domain->subhi[1] + cutghost[1];
+  bsubboxhi[2] = domain->subhi[2] + cutghost[2];
 
   last_bin = update->ntimestep;
   for (i = 0; i < mbins; i++) binhead[i] = -1;
@@ -253,6 +262,18 @@ void NBinStandard::bin_atoms()
   } else {
     for (i = nall-1; i >= 0; i--) {
       ibin = coord2bin(x[i]);
+      // if (ibin > mbins || ibin < 0) {
+      //   error->one(FLERR,"[info] ibin oversize mbins {} ibin {} x {:.2f} {:.2f} {:.2f} \n", 
+      //         mbins, ibin, x[i][0], x[i][1], x[i][2]);
+      // }
+      // if (i > nlocal) {
+      //   if(x[i][0] < bsubboxlo[0] || x[i][0] > bsubboxhi[0] || 
+      //     x[i][1] < bsubboxlo[1] || x[i][1] > bsubboxhi[1] || 
+      //     x[i][2] < bsubboxlo[2] || x[i][2] > bsubboxhi[2]){
+      //       error->one(FLERR,"[info] ghost atom error i {} x {:.2f} {:.2f} {:.2f} \n", 
+      //             i, x[i][0], x[i][1], x[i][2]);
+      //     }
+      // }
       atom2bin[i] = ibin;
       bins[i] = binhead[ibin];
       binhead[ibin] = i;

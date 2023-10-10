@@ -69,6 +69,8 @@ AtomVec::AtomVec(LAMMPS *lmp) : Pointers(lmp)
   x = v = f = nullptr;
 
   threads = nullptr;
+
+  domain_nmax_flag = false;
 }
 
 /* ---------------------------------------------------------------------- */
@@ -200,12 +202,36 @@ void AtomVec::grow(int n)
 {
   int datatype, cols, maxcols;
   void *pdata;
+  double cut , ndomain_max = 1;
+
+
+  if(domain_nmax_flag) {
+    error->one(FLERR, "AtomVec grow overflow  nmax : {} ndomain_namx : {}\n", nmax, ndomain_max);
+  }
 
   if (n == 0)
     grow_nmax();
   else
     nmax = MAX(n, nmax);
+
   atom->nmax = nmax;
+  
+  if(n == 0) {
+    cut = comm->get_comm_cutoff();
+    ndomain_max = atom->natoms * (domain->lcl_prd[0]+2*cut) * (domain->lcl_prd[1]+2*cut) * (domain->lcl_prd[2]+2*cut) 
+                              / (domain->prd[0]) / (domain->prd[1]) / (domain->prd[2]) ;
+                              
+    ndomain_max = MAX((ndomain_max * 1.5), nmax);
+    if(comm->me == 0) utils::logmesg(lmp," AtomVec nmax {} ndomain_max {} \n", nmax, ndomain_max);
+
+    if(DEBUG_MSG) utils::logmesg(lmp," AtomVec nmax {} ndomain_max {} \n", nmax, ndomain_max);
+
+    domain_nmax_flag = true;
+    atom->nmax = ndomain_max;
+  } else {
+    atom->nmax = nmax;  
+  }
+
   if (nmax < 0 || nmax > MAXSMALLINT) error->one(FLERR, "Per-processor system is too big");
 
   tag = memory->grow(atom->tag, nmax, "atom:tag");

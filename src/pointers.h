@@ -25,6 +25,8 @@
 #include "lmptype.h"    // IWYU pragma: export
 
 #include <mpi.h>        // IWYU pragma: export
+#include <omp.h>
+
 #include <cstddef>      // IWYU pragme: export
 #include <cstdio>       // IWYU pragma: export
 #include <string>       // IWYU pragma: export

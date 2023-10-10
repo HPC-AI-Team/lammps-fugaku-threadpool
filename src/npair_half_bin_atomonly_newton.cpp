@@ -18,6 +18,8 @@
 #include "error.h"
 #include "my_page.h"
 #include "neigh_list.h"
+#include "memory.h"
+#include "comm.h"
 
 using namespace LAMMPS_NS;
 
@@ -113,4 +115,73 @@ void NPairHalfBinAtomonlyNewton::build(NeighList *list)
   }
 
   list->inum = inum;
+}
+void NPairHalfBinAtomonlyNewton::build_parral(NeighList *list, int tid)
+{
+  const int nlocal = (includegroup) ? atom->nfirst : atom->nlocal;
+
+  const int nthreads = 12;
+
+  const int idelta = 1 + nlocal / nthreads;                             
+  const int ifrom = tid * idelta;                                    
+  const int ito = ((ifrom + idelta) > nlocal) ? nlocal : (ifrom + idelta); 
+
+  if(DEBUG_MSG) utils::logmesg(lmp, " build_parrale tid {} ifrom {} ito {}  nlocal {} \n", tid, ifrom, ito, nlocal); 
+
+  int i,j,k,n,itype,jtype,ibin;
+  double xtmp,ytmp,ztmp,delx,dely,delz,rsq;
+  int *neighptr;
+
+  // loop over each atom, storing neighbors
+
+  double **x = atom->x;
+  int *type = atom->type;
+  int *mask = atom->mask;
+  tagint *molecule = atom->molecule;
+
+  int *ilist = list->ilist;
+  int *numneigh = list->numneigh;
+  int **firstneigh = list->firstneigh;
+
+  // each thread has its own page allocator
+  MyPage<int> &ipage = list->ipage[tid];
+  ipage.reset();
+
+  for (i = ifrom; i < ito; i++) {
+    n = 0;
+    neighptr = ipage.vget();
+
+    itype = type[i];
+    xtmp = x[i][0];
+    ytmp = x[i][1];
+    ztmp = x[i][2];
+
+    ibin = atom2bin[i];
+    for (k = 0; k < nstencil; k++) {
+      for (j = binhead[ibin+stencil[k]]; j >= 0; j = bins[j]) {
+        #ifdef OPT_NEWTON   
+          if (j <= i) continue;
+        #endif
+        jtype = type[j];
+        if (exclude && exclusion(i,j,itype,jtype,mask,molecule)) continue;
+
+        delx = xtmp - x[j][0];
+        dely = ytmp - x[j][1];
+        delz = ztmp - x[j][2];
+        rsq = delx*delx + dely*dely + delz*delz;
+
+        if (rsq <= cutneighsq[itype][jtype]) neighptr[n++] = j;
+      }
+    }
+
+    ilist[i] = i;
+    firstneigh[i] = neighptr;
+    numneigh[i] = n;
+    ipage.vgot(n);
+    if (ipage.status())
+      error->one(FLERR,"Neighbor list overflow, boost neigh_modify one");
+  }
+
+  if(DEBUG_MSG) utils::logmesg(lmp, " list->inum {} \n", list->inum ); 
+
 }

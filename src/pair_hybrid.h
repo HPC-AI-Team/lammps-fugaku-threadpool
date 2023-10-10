@@ -30,6 +30,7 @@ class PairHybrid : public Pair {
   friend class FixGPU;
   friend class FixIntel;
   friend class FixNVESpin;
+  friend class FixThreadpool;
   friend class FixOMP;
   friend class Force;
   friend class Info;
